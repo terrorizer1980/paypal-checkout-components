@@ -2,7 +2,7 @@
 
 import { insertMockSDKScript } from '@paypal/sdk-client/src';
 
-import './tests';
+import './tests/button/props';
 
 window.mockDomain = 'mock://www.merchant-site.com';
 

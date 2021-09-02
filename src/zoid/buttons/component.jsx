@@ -26,7 +26,6 @@ export type ButtonsComponent = ZoidComponent<ButtonProps>;
 
 export const getButtonsComponent : () => ButtonsComponent = memoize(() => {
     const enableVenmoExperiment = createVenmoExperiment();
-    const disablePaylaterExperiment = createNoPaylaterExperiment();
 
     const queriedEligibleFunding = [];
     return create({
@@ -74,7 +73,7 @@ export const getButtonsComponent : () => ButtonsComponent = memoize(() => {
                 supportedNativeBrowser = isSupportedNativeBrowser(),
                 experiment = {
                     ...getVenmoExperiment(enableVenmoExperiment),
-                    ...getNoPaylaterExperiment(disablePaylaterExperiment)
+                    ...getNoPaylaterExperiment()
                 },
                 createBillingAgreement, createSubscription
             } = props;
@@ -256,8 +255,8 @@ export const getButtonsComponent : () => ButtonsComponent = memoize(() => {
                             enableVenmoExperiment.logStart({ [ FPTI_KEY.BUTTON_SESSION_UID ]: props.buttonSessionID });
                         }
 
-                        if (disablePaylaterExperiment) {
-                            disablePaylaterExperiment.logStart({ [ FPTI_KEY.BUTTON_SESSION_UID ]: props.buttonSessionID });
+                        if (getNoPaylaterExperiment()) {
+                            getNoPaylaterExperiment().logStart({ [ FPTI_KEY.BUTTON_SESSION_UID ]: props.buttonSessionID });
                         }
 
                         return value(...args);
@@ -378,7 +377,7 @@ export const getButtonsComponent : () => ButtonsComponent = memoize(() => {
                 value:      () => {
                     const experimentTreatments = {
                         ...getVenmoExperiment(enableVenmoExperiment),
-                        ...getNoPaylaterExperiment(disablePaylaterExperiment)
+                        ...getNoPaylaterExperiment()
                     };
                     return experimentTreatments;
                 }
