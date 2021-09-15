@@ -2,12 +2,12 @@
 /* eslint max-lines: 0 */
 
 import { ZalgoPromise } from 'zalgo-promise/src';
-import { wrapPromise, uniqueID } from 'belter/src';
+import { wrapPromise, uniqueID, getElement } from 'belter/src';
 import { FUNDING } from '@paypal/sdk-constants/src';
 
 import { generateOrderID, runOnClick,
     createTestContainer, destroyTestContainer,
-    getElementRecursive, onWindowOpen, WEBVIEW_USER_AGENT } from '../common';
+    getElementRecursive, onWindowOpen, WEBVIEW_USER_AGENT, assert } from '../common';
 
 describe(`paypal checkout component happy path`, () => {
 
@@ -17,6 +17,60 @@ describe(`paypal checkout component happy path`, () => {
 
     afterEach(() => {
         destroyTestContainer();
+    });
+
+    it.only('should render checkout with dimensions and then close', () => {
+        return wrapPromise(({ expect, avoid }) => {
+            return runOnClick(() => {
+                return window.paypal.Checkout({
+                    buttonSessionID: uniqueID(),
+                    fundingSource:   FUNDING.PAYPAL,
+                    dimensions:      { width: '1282', height: '720' },
+                    createOrder:     expect('createOrder', generateOrderID),
+                    onApprove:       expect('onApprove'),
+
+                    test: {
+                        action: 'checkout',
+                        onRender(actions) {
+                            const { width, height } = actions.xprops.dimensions;
+
+                            // purposely cause the test to fail
+                            if (height !== '721') {
+                                // TODO: figure out how to error here
+                                // maybe we need to use done() with this test case
+                                avoid(`height does not match. expected 720, got ${ height }`);
+
+                                // hacky solution is to get the test to fail
+                                actions.close();
+                            }
+                            if (width !== '1282') {
+                                avoid(`width does not match. expected 1282, got ${ width }`);
+                            }
+                        }
+                    },
+
+
+                }).render('body');
+                // .render('body').then(() => {
+
+
+
+                //     const e = getElementRecursive('body').getBoundingClientRect();
+                //     const { width, height } = e;
+
+                //     if (height !== 721) {
+                //         throw new Error(`height does not match. expected 721, got ${ height }`);
+                //     }
+                //     if (width !== 1282) {
+                //         throw new Error(`width does not match. expected 1282, got ${ width }`);
+                //     }
+
+                //     setTimeout(() => {
+                //         getElementRecursive('.paypal-checkout-close').click();
+                //     }, 100);
+                // });
+            });
+        });
     });
 
     it('should render checkout, then complete the payment', () => {
@@ -97,8 +151,6 @@ describe(`paypal checkout component happy path`, () => {
                     onApprove:       error('onApprove'),
                     onClose:         expect('onClose')
                 }).render('body').then(() => {
-
-                    // eslint-disable-next-line max-nested-callbacks
                     setTimeout(() => {
                         getElementRecursive('.paypal-checkout-close').click();
                     }, 100);
@@ -126,7 +178,6 @@ describe(`paypal checkout component happy path`, () => {
 
                     childWindow.focus = expect('windowFocus');
 
-                    // eslint-disable-next-line max-nested-callbacks
                     setTimeout(() => {
                         getElementRecursive('.paypal-checkout-overlay').click();
                     }, 100);

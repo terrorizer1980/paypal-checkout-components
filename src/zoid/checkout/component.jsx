@@ -27,19 +27,19 @@ export function getCheckoutComponent() : CheckoutComponent {
         const component = create({
             tag: 'paypal-checkout',
             url: () => `${ getPayPalDomain() }${ __PAYPAL_CHECKOUT__.__URI__.__CHECKOUT__ }`,
-        
+
             attributes: {
                 iframe: {
                     scrolling: 'yes'
                 }
             },
-        
+
             defaultContext: supportsPopups() ? CONTEXT.POPUP : CONTEXT.IFRAME,
 
             domain: getPayPalDomainRegex(),
-        
+
             logger: getLogger(),
-        
+
             prerenderTemplate: ({ doc, props }) => {
                 const { nonce } = props;
                 return (
@@ -65,14 +65,14 @@ export function getCheckoutComponent() : CheckoutComponent {
                     />
                 ).render(dom({ doc }));
             },
-        
+
             props: {
                 clientID: {
                     type:       'string',
                     value:      () => getClientID(),
                     queryParam: true
                 },
-        
+
                 sessionID: {
                     type:       'string',
                     value:      getSessionID,
@@ -84,25 +84,25 @@ export function getCheckoutComponent() : CheckoutComponent {
                     queryParam: true,
                     required:   false
                 },
-                
+
                 stickinessID: {
                     type:       'string',
                     queryParam: true,
                     required:   false
                 },
-                
+
                 env: {
                     type:       'string',
                     queryParam: true,
                     value:      getEnv
                 },
-        
+
                 sdkMeta: {
                     type:       'string',
                     queryParam: true,
                     value:      getSDKMeta
                 },
-        
+
                 nonce: {
                     type:          'string',
                     required:      false,
@@ -126,7 +126,7 @@ export function getCheckoutComponent() : CheckoutComponent {
                     required:   false,
                     default:    getBuyerCountry
                 },
-        
+
                 locale: {
                     type:          'object',
                     queryParam:    'locale.x',
@@ -143,25 +143,25 @@ export function getCheckoutComponent() : CheckoutComponent {
                     queryValue: ({ value }) => ZalgoPromise.try(value),
                     decorate:   ({ value }) => memoize(value)
                 },
-        
+
                 xcomponent: {
                     type:       'string',
                     queryParam: true,
                     value:      () => '1'
                 },
-        
+
                 version: {
                     type:       'string',
                     queryParam: true,
                     value:      getVersion
                 },
-        
+
                 commit: {
                     type:       'boolean',
                     queryParam: true,
                     value:      getCommit
                 },
-    
+
                 fundingSource: {
                     type:       'string',
                     queryParam: true,
@@ -185,12 +185,12 @@ export function getCheckoutComponent() : CheckoutComponent {
                     queryParam: true,
                     required:   false
                 },
-                
+
                 onApprove: {
                     type:     'function',
                     alias:    'onAuthorize'
                 },
-        
+
                 onShippingChange: {
                     type:     'function',
                     required: false
@@ -202,18 +202,18 @@ export function getCheckoutComponent() : CheckoutComponent {
                     default:     getClientMetadataID,
                     queryParam: 'client-metadata-id'
                 },
-        
+
                 onAuth: {
                     type:       'function',
                     required:   false,
                     sameDomain: true
                 },
-        
+
                 accessToken: {
                     type:     'string',
                     required: false
                 },
-        
+
                 onCancel: {
                     type:     'function',
                     required: false
@@ -225,18 +225,24 @@ export function getCheckoutComponent() : CheckoutComponent {
                         return (handler) => event.on(EVENT.FOCUS, handler);
                     }
                 },
-                
+
                 test: {
                     type:    'object',
                     default: () => (window.__test__ || { action: 'checkout' })
                 }
             },
-        
-            dimensions: isDevice()
-                ? { width:  '100%', height: `${ DEFAULT_POPUP_SIZE.HEIGHT }px` }
-                : { width:  `${ DEFAULT_POPUP_SIZE.WIDTH }px`, height: `${ DEFAULT_POPUP_SIZE.HEIGHT }px` }
+
+            dimensions: ({ props }) => {
+                if (typeof props.dimensions === 'object') {
+                    return { width: `${ props.dimensions.width }px`, height: `${ props.dimensions.height }px` };
+                } else {
+                    return isDevice()
+                        ? { width:  '100%', height: `${ DEFAULT_POPUP_SIZE.HEIGHT }px` }
+                        : { width:  `${ DEFAULT_POPUP_SIZE.WIDTH }px`, height: `${ DEFAULT_POPUP_SIZE.HEIGHT }px` };
+                }
+            }
         });
-        
+
         if (component.isChild()) {
             window.xchild = {
                 props: component.xprops,
@@ -246,7 +252,7 @@ export function getCheckoutComponent() : CheckoutComponent {
 
             fixCreditRedirect();
         }
-    
+
         return component;
     });
 }

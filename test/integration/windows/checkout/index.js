@@ -10,8 +10,13 @@ const { action, type, onRender, onInit } = window.xprops.test;
 const actions = {
     close() {
         window.close();
-    }
+    },
+    xprops: window.xprops
 };
+
+// alert(JSON.stringify(Object.keys(window.xprops.test)))
+
+debugger;
 
 const hash = window.location.hash ? `&hash=${ window.location.hash.slice(1) }` : '';
 
@@ -102,7 +107,7 @@ if (action === 'checkout') {
     });
 
 } else if (action === 'init') {
-    
+
     window.xprops.payment().then(() => {
         if (onInit) {
             return onInit(actions);
